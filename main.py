@@ -23,9 +23,16 @@ from keras_preprocessing import image
 
 # Encoder Network
 
+'''La fonction build_encoder permet de crée l'encodere en premier temps on prend notre image et la convertit 
+en un vecteur de 100 dimensions puis on doit cree quatre couches de convolution utilisant la fonction Conv2D 
+et deux couches entièrement connecté chaque couche de convolution a pour fonction d'activation une LeakyReLU . 
+Autrement dit, il y a toujours une couche de correction LeakyReLU et une couche de normalisation par lots 
+ (BatchNormalization) après une couche de convolution. '''
+
 def build_encoder():
   
   input_layer = Input(shape = (64, 64, 3))
+
   
   ## 1st Convolutional Block
   enc = Conv2D(filters = 32, kernel_size = 5, strides = 2, padding = 'same')(input_layer)
@@ -65,7 +72,12 @@ def build_encoder():
   
   
 # Generator Network
-
+''' La fonction build_generator() permet de crée notre génerateur qui est chargé de générer une image, il prend
+un vecteur latent de 100 dimension depuis l'encodere et num_classe comme entrée et tente de générer des images 
+réalistes. Le générateur prend deux valeurs d'entrée un vecteur de bruit et une valeur conditionnelle, Ce 
+reseau la est un CNN composé de les couches suivant dense, batch, Conv et LeakyRelu. La derniere couche est
+suivi par une couche de correction tanh.  
+'''
 def build_generator():
   
   latent_dims = 100
@@ -101,12 +113,13 @@ def build_generator():
   x = UpSampling2D(size = (2, 2))(x)
   x = Conv2D(filters = 3, kernel_size = 5, padding = 'same')(x)
   x = Activation('tanh')(x)
+
   
   
   model = Model(inputs = [input_z_noise, input_label], outputs = [x])
   return model
   
-
+#
 def expand_label_input(x):
   x = K.expand_dims(x, axis = 1)
   x = K.expand_dims(x, axis = 1)
@@ -115,6 +128,13 @@ def expand_label_input(x):
   
   
 # Discriminator Network
+
+''' La fonction build_discriminator permet de crée notre discrimianteur qui est chargé de identifier 
+si l'image fournie est fausse ou réelle par le faire passer à travers une série de couches de 
+sous-échantillonnage et certaines couches de classification. Le discrimiateur est un CNN aussi les deux
+réseaux précedent qu'on a crée la seule difference est que la premier couche de convolution manque la couche
+de normalization par lots (batch)
+'''
 
 def build_discriminator():
   
@@ -143,10 +163,13 @@ def build_discriminator():
   x = LeakyReLU(alpha = 0.2)(x)
   
   x = Flatten()(x)
+  
   x = Dense(1, activation = 'sigmoid')(x)
   
   
   model = Model(inputs = [image_input, label_input], outputs = [x])
+
+  
   return model
 
 
@@ -174,6 +197,10 @@ def build_fr_combined_network(encoder, generator, fr_model):
   return model
   
 
+'''Cette fonction permet de crée un Réseau de reconnaissance faciale pour construire de model on utilise le pré-entraîné
+InceptionResNetV2 model sans les couches entierement connecté. Ce reseau une fois pourvu d'une image, renvoie 
+l'intégration correspondante
+'''
 def build_fr_model(input_shape):
   
   resnet_model = InceptionResNetV2(include_top = False, weights = 'imagenet',
@@ -193,6 +220,8 @@ def build_fr_model(input_shape):
   return model
   
   
+
+#Reduction des dimension d'entrée
 def build_image_resizer():
   
   input_layer = Input(shape = (64, 64, 3))
@@ -229,6 +258,7 @@ def age_to_category(age_list):
   return age_list1
   
   
+#Chargement des images
 def load_images(data_dir, image_paths, image_shape):
   
   images = None
@@ -261,6 +291,7 @@ def load_images(data_dir, image_paths, image_shape):
       
   return images
   
+
 def euclidean_distance_loss(y_true, y_pred):
   
   """
