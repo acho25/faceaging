@@ -21,11 +21,11 @@ from tensorflow.keras.utils import to_categorical
 from keras_preprocessing import image
 
 
-# Encoder Network
+# Réseau d'encodeur
 
-'''La fonction build_encoder permet de crée l'encodere en premier temps on prend notre image et la convertit 
+'''La fonction build_encoder permet de créer l'encodeur, en premier temps on prend notre image et la convertit 
 en un vecteur de 100 dimensions puis on doit cree quatre couches de convolution utilisant la fonction Conv2D 
-et deux couches entièrement connecté chaque couche de convolution a pour fonction d'activation une LeakyReLU . 
+et deux couches entièrement connectées chaque couche de convolution a pour fonction d'activation une LeakyReLU . 
 Autrement dit, il y a toujours une couche de correction LeakyReLU et une couche de normalisation par lots 
  (BatchNormalization) après une couche de convolution. '''
 
@@ -34,49 +34,48 @@ def build_encoder():
   input_layer = Input(shape = (64, 64, 3))
 
   
-  ## 1st Convolutional Block
+  ## 1er bloc convolutionnel
   enc = Conv2D(filters = 32, kernel_size = 5, strides = 2, padding = 'same')(input_layer)
   # enc = BatchNormalization()(enc)
   enc = LeakyReLU(alpha = 0.2)(enc)
   
-  ## 2nd Convolutional Block
+  ## 2eme bloc convolutif
   enc = Conv2D(filters = 64, kernel_size = 5, strides = 2, padding = 'same')(enc)
   enc = BatchNormalization()(enc)
   enc = LeakyReLU(alpha = 0.2)(enc)
   
-  ## 3rd Convolutional Block
+  ## 3eme bloc convolutif
   enc = Conv2D(filters = 128, kernel_size = 5, strides = 2, padding = 'same')(enc)
   enc = BatchNormalization()(enc)
   enc = LeakyReLU(alpha = 0.2)(enc)
   
-  ## 4th Convolutional Block
+  ## 4eme bloc convolutif
   enc = Conv2D(filters = 256, kernel_size = 5, strides = 2, padding = 'same')(enc)
   enc = BatchNormalization()(enc)
   enc = LeakyReLU(alpha = 0.2)(enc)
   
-  ## Flatten layer
   enc = Flatten()(enc)
   
-  ## 1st Fully Connected Layer
+  ## 1ere couche entièrement connectée
   enc = Dense(4096)(enc)
   enc = BatchNormalization()(enc)
   enc = LeakyReLU(alpha = 0.2)(enc)
   
-  ## 2nd Fully Connected Layer
+  ## 2eme couche entièrement connectée
   enc = Dense(100)(enc)
   
   
-  ## Create a model
+  ## Créer un modèle
   model = Model(inputs = [input_layer], outputs = [enc])
   return model
   
   
-# Generator Network
-''' La fonction build_generator() permet de crée notre génerateur qui est chargé de générer une image, il prend
-un vecteur latent de 100 dimension depuis l'encodere et num_classe comme entrée et tente de générer des images 
+# Réseau de générateurs
+''' La fonction build_generator() permet de créer notre génerateur qui est chargé de générer une image, il prend
+un vecteur latent de 100 dimension depuis l'encodeur et num_classe comme entrée et tente de générer des images 
 réalistes. Le générateur prend deux valeurs d'entrée un vecteur de bruit et une valeur conditionnelle, Ce 
-reseau la est un CNN composé de les couches suivant dense, batch, Conv et LeakyRelu. La derniere couche est
-suivi par une couche de correction tanh.  
+reseau la est un CNN composé de couches suivant les elements :dense, batch, Conv et LeakyRelu. La derniere couche est
+suivie par une couche de correction tanh.  
 '''
 def build_generator():
   
@@ -127,12 +126,12 @@ def expand_label_input(x):
   return x
   
   
-# Discriminator Network
+# Réseau de discrimination
 
-''' La fonction build_discriminator permet de crée notre discrimianteur qui est chargé de identifier 
+''' La fonction build_discriminator permet de créer notre discrimianteur qui est chargée d'identifier 
 si l'image fournie est fausse ou réelle par le faire passer à travers une série de couches de 
 sous-échantillonnage et certaines couches de classification. Le discrimiateur est un CNN aussi les deux
-réseaux précedent qu'on a crée la seule difference est que la premier couche de convolution manque la couche
+réseaux précedents qu'on a crée la seule difference est que la premier couche de convolution manque la couche
 de normalization par lots (batch)
 '''
 
@@ -173,7 +172,7 @@ def build_discriminator():
   return model
 
 
-# Utility Functions
+# Fonctions utilitaires
 
 def build_fr_combined_network(encoder, generator, fr_model):
   input_image = Input(shape = (64, 64, 3))
@@ -317,7 +316,7 @@ def write_log(callback, name, value, batch_no):
 def save_rgb_img(img, path):
   
   """
-  Save an RGB image
+  Enregistrer une image RGB
   """
   
   fig = plt.figure()
@@ -341,22 +340,22 @@ def calculate_age(taken, dob):
     return taken - birth.year - 1
 
 def load_data(wiki_dir, dataset = 'wiki'):
-  ## Load the wiki.mat file
+  ## Charger le fichier wiki.mat
   meta = scipy.io.loadmat(os.path.join(wiki_dir, "{}.mat".format(dataset)))
   
-  ## Load the list of all files
+  ## Charger la liste de tous les fichiers
   full_path = meta[dataset][0, 0]["full_path"][0]
   
-  ## List of Matlab serial date numbers
+  ## Liste des numéros de date de série Matlab
   dob = meta[dataset][0, 0]["dob"][0]
   
-  ## List of years when photo was taken
+  ## Liste des années où la photo a été prise
   photo_taken = meta[dataset][0, 0]["photo_taken"][0]  # year
   
-  ## Calculate age for all dobs
+  ## Calculer l'âge pour tous les dobs
   age = [calculate_age(photo_taken[i], dob[i]) for i in range(len(dob))]
   
-  ## Create a list of tuples containing a pair of an image path and age
+  ## Créer une liste de tuples contenant une paire de chemin d'image et d'âge
   images = []
   age_list = []
   for index, image_path in enumerate(full_path):
@@ -364,12 +363,12 @@ def load_data(wiki_dir, dataset = 'wiki'):
     age_list.append(age[index])
     print("done")
   
-  ## Return a list of all images and respective age
+  ## Renvoie une liste de toutes les images et leur âge respectif
   return images, age_list
 
 if __name__ == '__main__':
   
-  ## Define hyperparameters
+  ## Définir les hyperparamètres
   data_dir = "data"
   wiki_dir = os.path.join(data_dir, "wiki_crop")
   ##wiki_dir = "wiki_crop"
@@ -383,7 +382,7 @@ if __name__ == '__main__':
   fr_image_shape = (192, 192, 3)
   
   
-  ## Define optimizers
+  ## Définir les optimiseurs
   dis_optimizer = Adam(lr = 0.0002, beta_1 = 0.5, beta_2 = 0.999, epsilon = 10e-8)
   gen_optimizer = Adam(lr = 0.0002, beta_1 = 0.5, beta_2 = 0.999, epsilon = 10e-8)
   adversarial_optimizer = Adam(lr = 0.0002, beta_1 = 0.5, beta_2 = 0.999, epsilon = 10e-8)
@@ -393,19 +392,19 @@ if __name__ == '__main__':
   Build and compile networks
   """
   
-  ## Build and compile the discriminator network
+  ## Construire et compiler le réseau discriminateur
   discriminator = build_discriminator()
   discriminator.compile(loss = ['binary_crossentropy'],
                         optimizer = dis_optimizer)
   
   
-  ## Build and compile the generator network
+  ## Construire et compiler le réseau de générateurs
   generator = build_generator()
   generator.compile(loss = ['binary_crossentropy'],
                     optimizer = gen_optimizer)
   
   
-  ## Build and compile the adversarial model
+  ## Construire et compiler le modèle contradictoire
   discriminator.trainable = False
   input_z_noise = Input(shape = (100, ))
   input_label = Input(shape = (6, ))
@@ -422,7 +421,7 @@ if __name__ == '__main__':
   
   
   """
-  Load the dataset
+  Charger la dataset
   """
   
   images, age_list = load_data(wiki_dir = wiki_dir, dataset = "wiki")
@@ -435,13 +434,13 @@ if __name__ == '__main__':
   loaded_images = load_images(wiki_dir, images, (image_shape[0], image_shape[1]))
   
   
-  ## Implement label smoothing
+  ## Implementation de label smoothing
   real_labels = np.ones((batch_size, 1), dtype = np.float32) * 0.9
   fake_labels = np.zeros((batch_size, 1), dtype = np.float32) * 0.1
   
   
   """
-  Train the generator and the discriminator network
+  Train de générateur et de réseau discriminateur
   """
   
   if TRAIN_GAN:
@@ -465,10 +464,10 @@ if __name__ == '__main__':
         
         
         """
-        Train the discriminator network
+        Train discriminateur
         """
         
-        ## Generate fake images
+        ## Générer de fausses images
         initial_recons_images = generator.predict_on_batch([z_noise, y_batch])
         
         d_loss_real = discriminator.train_on_batch([images_batch, y_batch], real_labels)
@@ -479,29 +478,16 @@ if __name__ == '__main__':
         
         
         """
-        Train the generator network
+        Train de générateur
         """
         
         z_noise2 = np.random.normal(0, 1, size = (batch_size, z_shape))
         random_labels = np.random.randint(0, 6, batch_size).reshape(-1, 1)
         random_labels = to_categorical(random_labels, 6)
-        
-        ##g_loss = adversarial_model.train_on_batch([z_noise2, random_labels], [1] * batch_size)
-        
-        ##print("g_loss: {}".format(g_loss))
-        
-        
-        ##gen_losses.append(g_loss)
-        ##dis_losses.append(d_loss)
-        
-      
-      ## Write losses to Tensorboard
-      ##write_log(tensorboard, 'g_loss', np.mean(gen_losses), epoch)
-      ##write_log(tensorboard, 'd_loss', np.mean(dis_losses), epoch)
       
       
       """
-      Generate images after every 10th epoch
+      Générer des images après chaque 10ème époque
       """
       
       if epoch % 10 == 0:
@@ -518,7 +504,7 @@ if __name__ == '__main__':
           save_rgb_img(img, path = "results/img_{}_{}.png".format(epoch, i))
           
         
-    ## Save networks
+    ## Enregistrer les réseaux
     try:
       generator.save_weights("generator.h5")
       discriminator.save_weights("discriminator.h5")
@@ -527,18 +513,18 @@ if __name__ == '__main__':
       
   
   """
-  Train encoder
+  Train encodeur
   """
   
   if TRAIN_ENCODER:
     
-    ## Build and compile encoder
+    ## Construire et compiler l'encodeur
     encoder = build_encoder()
     encoder.compile(loss = euclidean_distance_loss,
                     optimizer = 'adam')
     
     
-    ## Load the generator network's weights
+    ## Charger les poids du réseau de générateur
     try:
       generator.load_weights("generator.h5")
     except Exception as e:
@@ -571,32 +557,29 @@ if __name__ == '__main__':
         generated_images = generator.predict_on_batch([z_batch, y_batch])
         
         
-        ## Train the encoder model
+        ## Train le modèle d'encodeur
         encoder_loss = encoder.train_on_batch(generated_images, z_batch)
         print("Encoder loss: ", encoder_loss)
         
         encoder_losses.append(encoder_loss)
         
-        
-      ## Write the encoder loss to Tensorboard
-      ##write_log(tensorboard, "encoder_loss", np.mean(encoder_losses), epoch)
       
-    ## Save the encoder model
+    ## Enregistrer le modèle d'encodeur
     encoder.save_weights("encoder.h5")
     
     
   """
-  Optimize the encoder and the generator network
+  Optimiser le codeur et le réseau du générateur
   """
   
   if TRAIN_GAN_WITH_FR:
     
-    ## Load the encoder network
+    ## Charger le réseau codeur
     encoder = build_encoder()
     encoder.load_weights("encoder.h5")
     
     
-    ## Load the generator network
+    ## Charger le réseau du générateur
     generator.load_weights("generator.h5")
     
     image_resizer = build_image_resizer()
@@ -604,38 +587,38 @@ if __name__ == '__main__':
                           optimzer = 'adam')
     
     
-    ## Face recognition model
+    ## Modèle de reconnaissance faciale
     fr_model = build_fr_model(input_shape = fr_image_shape)
     fr_model.compile(loss = ['binary_crossentropy'],
                      optimizer = 'adam')
     
-    ## Make the face recognition model as non-trainable
+    ## Rendre le modèle de reconnaissance faciale non entraînable
     fr_model.trainable = False
     
     
-    ## Input layers
+    ## Couches d'entrée
     input_image = Input(shape = (64, 64, 3))
     input_label = Input(shape = (6, ))
     
     
-    ## Use the encoder and the generator network
+    ## Utiliser l'encodeur et le réseau du générateur
     latent0 = encoder(input_image)
     gen_images = generator([latent0, input_label])
     
     
-    ## Resize images to the desired shape
+    ## Redimensionner les images à la forme souhaitée
     resized_images = Lambda(lambda x: K.resize_images(gen_images, height_factor = 3,
                                                       width_factor = 3,
                                                       data_format = 'channels_last'))(gen_images) 
     embeddings = fr_model(resized_images)
     
     
-    ## Create a Keras model and specify the inputs and outputs for the network
+    ## Créer un modèle Keras et spécifier les entrées et sorties pour le réseau
     fr_adversarial_model = Model(inputs = [input_image, input_label],
                                  outputs = [embeddings])
     
     
-    ## Compile the model
+    ## Compiler le modèle
     fr_adversarial_model.compile(loss = euclidean_distance_loss,
                                  optimizer = adversarial_optimizer)
     
@@ -666,12 +649,12 @@ if __name__ == '__main__':
         reconstruction_losses.append(reconstruction_loss)
         
         
-      ## Write the reconstruction loss to Tensorboard
+      ## Écrire la perte de reconstruction à Tensorboard
       write_log(tensorboard, "reconstruction_loss", np.mean(reconstruction_losses), epoch)
       
       
       """
-      Generate images
+      Générer des images
       """
       
       if epoch % 10 == 0:
@@ -688,6 +671,6 @@ if __name__ == '__main__':
           save_rgb_image(img, path = "results/img_opt_{}_{}.png".format(epoch, i))
         
         
-    ## Save improved weights for both of the networks
+    ## Enregistrer des poids améliorés pour les deux réseaux
     generator.save_weights("generator_optimized.h5")
     encoder.save_weights("encoder_optimized.h5")
