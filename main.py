@@ -134,7 +134,6 @@ sous-échantillonnage et certaines couches de classification. Le discrimiateur e
 réseaux précedents qu'on a crée la seule difference est que la premier couche de convolution manque la couche
 de normalization par lots (batch)
 '''
-
 def build_discriminator():
   
   input_shape = (64, 64, 3)
@@ -264,8 +263,8 @@ def load_images(data_dir, image_paths, image_shape):
   
   for i, image_path in enumerate(image_paths):
     print(i)
-    if i == 1000:
-      break
+    #if i == 1000: pour tester avec moin de temps de traitement 
+      #break
     try:
       ## Load image
       loaded_image = image.load_img(os.path.join(data_dir, image_path),
@@ -439,9 +438,12 @@ if __name__ == '__main__':
   fake_labels = np.zeros((batch_size, 1), dtype = np.float32) * 0.1
   
   
-  """
-  Train de générateur et de réseau discriminateur
-  """
+
+
+  """Dans cette étape, nous entraînons à la fois les réseaux générateurs et discriminateur.
+Une fois le réseau du générateur formé, il peut générer des images floues dun visage.
+Cette étape est comparable à la formation d un GAN , où nous formons les deux réseaux
+simultanément."""
   
   if TRAIN_GAN:
     for epoch in range(epochs):
@@ -487,7 +489,7 @@ if __name__ == '__main__':
       
       
       """
-      Générer des images après chaque 10ème époque
+      Générer des images floues après chaque 10ème époque
       """
       
       if epoch % 10 == 0:
@@ -512,8 +514,11 @@ if __name__ == '__main__':
       print("Error: ", e)
       
   
-  """
-  Train encodeur
+  """ 
+  Nous entraînons le réseau de codeur sur les images générées et les images réelles.
+  Une fois formé, il commencera à générer des vecteurs latents à partir de la distribution
+  apprise.
+
   """
   
   if TRAIN_ENCODER:
@@ -570,6 +575,8 @@ if __name__ == '__main__':
     
   """
   Optimiser le codeur et le réseau du générateur
+  dans cette étape, nous essayons de minimiser la distance afin de maximiser la
+  préservation de l’identité.
   """
   
   if TRAIN_GAN_WITH_FR:
